@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de diagnóstico · Pasturas base alfalfa · MasPasto</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gd:#085041;--gm:#1D9E75;--gl:#E1F5EE;--yd:#854F0B;--yl:#FFF3CD;--rd:#A32D2D;--rl:#FCEBEB;--txt:#1a1a1a;--muted:#666;--border:rgba(0,0,0,0.1);--r:12px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f7f5f0;color:var(--txt);min-height:100vh}
+
+/* header */
+.header{background:var(--gd);color:#fff;padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(29,158,117,.35) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(93,202,165,.2) 0%,transparent 50%)}
+.header-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:400;line-height:1.15;margin-bottom:.5rem}
+.header h1 em{font-style:italic;color:#9FE1CB}
+.header p{font-size:15px;color:rgba(255,255,255,.75);line-height:1.6;max-width:480px;margin:0 auto}
+.badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:3px 12px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:1rem;letter-spacing:.04em}
+.landscape{width:100%;height:70px;display:block}
+.container{max-width:640px;margin:0 auto;padding:1.5rem}
+
+/* tabs historial */
+.tabs{display:flex;gap:4px;background:var(--border);border-radius:var(--r);padding:4px;margin-bottom:1rem}
+.tab-btn{flex:1;padding:8px;border:none;border-radius:var(--rs);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);transition:.15s}
+.tab-btn.on{background:#fff;color:var(--gd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tab-panel{display:none}
+.tab-panel.on{display:block}
+
+/* cards */
+.card{background:#fff;border-radius:var(--r);border:0.5px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+
+/* tipo */
+.tipo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tipo-btn{border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;cursor:pointer;padding:12px 10px;text-align:center;transition:.2s;font-family:'DM Sans',sans-serif}
+.tipo-btn .ico{font-size:24px;display:block;margin-bottom:4px}
+.tipo-btn .lbl{font-size:13px;font-weight:500;color:var(--muted)}
+.tipo-btn.on{border:2px solid var(--gm);background:var(--gl)}
+.tipo-btn.on .lbl{color:var(--gd)}
+
+/* estación */
+.est-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.est-btn{border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;cursor:pointer;padding:8px 6px;text-align:center;font-family:'DM Sans',sans-serif;transition:.15s}
+.est-btn .eico{font-size:18px;display:block;margin-bottom:2px}
+.est-btn .elbl{font-size:12px;font-weight:500;color:var(--muted)}
+.est-btn.on{border:2px solid var(--gm);background:var(--gl)}
+.est-btn.on .elbl{color:var(--gd)}
+
+/* nombre lote */
+.lote-input{width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);background:#fff;outline:none;transition:.15s}
+.lote-input:focus{border-color:var(--gm);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+
+/* sliders */
+.field{margin-bottom:1.25rem}
+.field:last-child{margin-bottom:0}
+.fh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap}
+.flabel{font-size:14px;font-weight:500;color:var(--txt)}
+.fright{display:flex;align-items:center;gap:8px}
+.fval{font-size:15px;font-weight:600;color:var(--gd);min-width:80px;text-align:right}
+.help-btn{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--gm);background:transparent;cursor:pointer;font-size:11px;font-weight:600;color:var(--gm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'DM Sans',sans-serif}
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:10px;outline:none;cursor:pointer;background:#e0e0e0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gd);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--gd);border:3px solid #fff;cursor:pointer}
+
+/* tooltip ayuda */
+.help-box{display:none;margin-top:.75rem;background:#f0faf6;border:0.5px solid var(--gm);border-radius:var(--rs);padding:.75rem 1rem}
+.help-box.open{display:block}
+.help-box p{font-size:13px;color:#085041;line-height:1.6;margin-bottom:.5rem}
+.help-box p:last-child{margin-bottom:0}
+.help-scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:.5rem}
+.hsc{flex:1;min-width:90px;border-radius:6px;padding:4px 8px;font-size:11px;text-align:center;line-height:1.4}
+.hsc-g{background:#E1F5EE;color:#085041}
+.hsc-y{background:#FFF3CD;color:#854F0B}
+.hsc-r{background:#FCEBEB;color:#A32D2D}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.rchip{padding:6px 14px;border-radius:100px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:.15s;font-family:'DM Sans',sans-serif}
+.rchip.on{border-color:var(--gm);background:var(--gl);color:var(--gd)}
+.hidden{display:none!important}
+
+/* botón principal */
+.btn-main{width:100%;padding:15px;background:var(--gd);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:.2s;margin-bottom:1.5rem}
+.btn-main:hover{background:#0F6E56;transform:translateY(-1px);box-shadow:0 4px 12px rgba(8,80,65,.2)}
+
+/* resultado */
+.result{display:none}
+.res-header{border-radius:var(--r) var(--r) 0 0;padding:1.5rem;display:flex;align-items:center;gap:16px}
+.res-icon{font-size:42px;flex-shrink:0}
+.res-title{font-family:'DM Serif Display',serif;font-size:1.4rem;font-weight:400;line-height:1.2}
+.res-sub{font-size:13px;margin-top:4px;opacity:.8;font-weight:500}
+.res-body{background:#fff;border:0.5px solid var(--border);border-radius:0 0 var(--r) var(--r);overflow:hidden}
+.res-illus{width:100%;display:block}
+.res-content{padding:1.25rem 1.5rem}
+.conf-lbl{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+.conf-bar{height:6px;border-radius:3px;background:#e0e0e0;margin-bottom:1rem;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;transition:.4s}
+.chips-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem}
+.chip{border-radius:var(--rs);padding:8px 12px;font-size:12px;line-height:1.4}
+.chip strong{display:block;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.chip-ok{background:#E1F5EE;color:#085041}
+.chip-warn{background:#FFF3CD;color:#854F0B}
+.chip-bad{background:#FCEBEB;color:#A32D2D}
+.hr{border:none;border-top:0.5px solid var(--border);margin:1rem 0}
+.res-desc{font-size:14px;line-height:1.7;color:#333;margin-bottom:.75rem}
+.accion{border-radius:var(--rs);padding:.9rem 1.1rem;font-size:14px;font-weight:600;line-height:1.5;margin-bottom:.75rem}
+.ac-g{background:#E1F5EE;color:#085041}
+.ac-y{background:#FFF3CD;color:#854F0B}
+.ac-r{background:#FCEBEB;color:#A32D2D}
+
+/* descanso estacional */
+.descanso-box{border-radius:var(--rs);padding:.75rem 1rem;font-size:13px;line-height:1.5;background:#f0faf6;border:0.5px solid var(--gm);color:#085041;margin-bottom:.75rem}
+
+/* botones guardar/compartir */
+.action-row{display:flex;gap:8px;margin-top:.75rem}
+.action-btn{flex:1;padding:10px;border:0.5px solid var(--border);border-radius:var(--rs);background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--txt);transition:.15s;text-align:center}
+.action-btn:hover{background:#f0faf6;border-color:var(--gm);color:var(--gd)}
+
+/* historial */
+.hist-empty{text-align:center;padding:2rem;color:var(--muted);font-size:14px}
+.hist-card{background:#fff;border:0.5px solid var(--border);border-radius:var(--rs);padding:1rem;margin-bottom:.75rem;cursor:pointer;transition:.15s}
+.hist-card:hover{border-color:var(--gm);background:#f9fefc}
+.hist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.hist-lote{font-size:14px;font-weight:500;color:var(--txt)}
+.hist-fecha{font-size:11px;color:var(--muted)}
+.hist-badge{font-size:12px;font-weight:500;padding:3px 10px;border-radius:100px}
+.hist-row{display:flex;gap:6px;flex-wrap:wrap}
+.hist-chip{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--border);color:var(--muted)}
+.hist-del{background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0 4px;line-height:1}
+.hist-del:hover{color:var(--rd)}
+.btn-clear{width:100%;padding:10px;border:0.5px solid #FCEBEB;border-radius:var(--rs);background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--rd);margin-top:.5rem}
+.btn-clear:hover{background:#FCEBEB}
+
+footer{text-align:center;padding:2rem 1.5rem;font-size:12px;color:var(--muted);line-height:1.7}
+footer strong{color:var(--gd)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <span class="badge">FAUBA · Forrajicultura · MasPasto</span>
+    <h1>Diagnóstico de<br><em>pasturas base alfalfa</em></h1>
+    <p>Cargá los valores del lote y el sistema te indica en qué estado se encuentra tu pastura y qué hacer.</p>
+  </div>
+</header>
+
+<svg class="landscape" viewBox="0 0 640 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <rect width="640" height="70" fill="#085041"/>
+  <rect x="0" y="50" width="640" height="20" fill="#9F7B4B"/>
+  <g fill="#1D9E75">
+    <ellipse cx="40" cy="45" rx="12" ry="8"/><rect x="39" y="45" width="2" height="10"/>
+    <ellipse cx="100" cy="42" rx="14" ry="9"/><rect x="99" y="42" width="2" height="12"/>
+    <ellipse cx="165" cy="44" rx="11" ry="7"/><rect x="164" y="44" width="2" height="10"/>
+    <ellipse cx="230" cy="43" rx="13" ry="8"/><rect x="229" y="43" width="2" height="11"/>
+    <ellipse cx="295" cy="45" rx="12" ry="8"/><rect x="294" y="45" width="2" height="10"/>
+    <ellipse cx="355" cy="42" rx="14" ry="9"/><rect x="354" y="42" width="2" height="12"/>
+    <ellipse cx="420" cy="44" rx="11" ry="7"/><rect x="419" y="44" width="2" height="10"/>
+    <ellipse cx="480" cy="43" rx="13" ry="8"/><rect x="479" y="43" width="2" height="11"/>
+    <ellipse cx="545" cy="45" rx="12" ry="8"/><rect x="544" y="45" width="2" height="10"/>
+    <ellipse cx="605" cy="42" rx="14" ry="9"/><rect x="604" y="42" width="2" height="12"/>
+  </g>
+  <g fill="#5DCAA5" opacity=".6">
+    <ellipse cx="70" cy="47" rx="9" ry="6"/><rect x="69" y="47" width="2" height="7"/>
+    <ellipse cx="200" cy="46" rx="10" ry="6"/><rect x="199" y="46" width="2" height="8"/>
+    <ellipse cx="325" cy="47" rx="9" ry="6"/><rect x="324" y="47" width="2" height="7"/>
+    <ellipse cx="450" cy="46" rx="10" ry="6"/><rect x="449" y="46" width="2" height="8"/>
+    <ellipse cx="575" cy="47" rx="9" ry="6"/><rect x="574" y="47" width="2" height="7"/>
+  </g>
+</svg>
+
+<main class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn on" onclick="setTab('diagnostico')">Diagnóstico</button>
+    <button class="tab-btn"    onclick="setTab('historial')">Historial de lotes</button>
+  </div>
+
+  <!-- TAB DIAGNÓSTICO -->
+  <div class="tab-panel on" id="tab-diagnostico">
+
+    <!-- nombre lote -->
+    <div class="card">
+      <p class="card-title">Identificación del lote</p>
+      <input class="lote-input" type="text" id="lote-nombre" placeholder="Ej: Lote Norte, Potrero 3, Campo La Esperanza…" maxlength="60">
+    </div>
+
+    <!-- estación -->
+    <div class="card">
+      <p class="card-title">Época del año</p>
+      <div class="est-row">
+        <button class="est-btn" id="e-pv" onclick="setEst('pv')"><span class="eico">🌸</span><span class="elbl">Primavera / Verano</span></button>
+        <button class="est-btn on" id="e-oi" onclick="setEst('oi')"><span class="eico">🍂</span><span class="elbl">Otoño / Invierno</span></button>
+      </div>
+    </div>
+
+    <!-- tipo -->
+    <div class="card">
+      <p class="card-title">Tipo de pastura</p>
+      <div class="tipo-row">
+        <button class="tipo-btn on" id="b-pura" onclick="setTipo('pura')"><span class="ico">🌿</span><span class="lbl">Alfalfa pura</span></button>
+        <button class="tipo-btn"    id="b-mix"  onclick="setTipo('mix')"><span class="ico">🌾</span><span class="lbl">Alfalfa + gramíneas</span></button>
+      </div>
+    </div>
+
+    <!-- densidad -->
+    <div class="card">
+      <p class="card-title">Densidad</p>
+      <div class="field">
+        <div class="fh">
+          <span class="flabel">Plantas de alfalfa/m²</span>
+          <div class="fright">
+            <button class="help-btn" onclick="togHelp('h-pl')" title="¿Cómo medir?">?</button>
+            <span class="fval" id="pl-v">60 pl/m²</span>
+          </div>
+        </div>
+        <input type="range" id="sl-pl" min="0" max="420" step="5" value="60" oninput="sl(this,'pl-v',this.value+' pl/m²')">
+        <div class="help-box" id="h-pl">
+          <p>📐 <strong>Cómo medir:</strong> usá un marco de 50×50 cm (0,25 m²). Colocalo en el suelo, contá las plantas dentro y multiplicá × 4. Repetí en 4 lugares del lote y promediá.</p>
+          <p>💡 Contá como una sola planta cada corona, aunque tenga varias ramas.</p>
+          <div class="help-scale">
+            <div class="hsc hsc-g">Pura &gt;100<br>Buena condición</div>
+            <div class="hsc hsc-y">Pura 50–100<br>Mejorable</div>
+            <div class="hsc hsc-r">Pura &lt;50<br>Degradada</div>
+          </div>
+          <div class="help-scale">
+            <div class="hsc hsc-g">Mezcla &gt;50<br>Buena condición</div>
+            <div class="hsc hsc-y">Mezcla 25–50<br>Mejorable</div>
+            <div class="hsc hsc-r">Mezcla &lt;25<br>Degradada</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="fh">
+          <span class="flabel">Tallos de alfalfa/m²</span>
+          <div class="fright">
+            <button class="help-btn" onclick="togHelp('h-tl')" title="¿Cómo medir?">?</button>
+            <span class="fval" id="tl-v">400 t/m²</span>
+          </div>
+        </div>
+        <input type="range" id="sl-tl" min="0" max="800" step="10" value="400" oninput="sl(this,'tl-v',this.value+' t/m²')">
+        <div class="help-box" id="h-tl">
+          <p>📐 <strong>Cómo medir:</strong> en el mismo marco, contá cada tallo individual que emerge de la corona. Una planta puede tener 3 a 15 tallos. Multiplicá × 4.</p>
+          <p>💡 Si hay pocas plantas pero muchos tallos, la alfalfa está compensando. Si hay pocas plantas Y pocos tallos, la situación es más crítica.</p>
+          <div class="help-scale">
+            <div class="hsc hsc-g">Pura ≥600<br>Buena condición</div>
+            <div class="hsc hsc-y">Pura 400–600<br>Mejorable</div>
+            <div class="hsc hsc-r">Pura &lt;400<br>Degradada</div>
+          </div>
+          <div class="help-scale">
+            <div class="hsc hsc-g">Mezcla ≥300<br>Buena condición</div>
+            <div class="hsc hsc-y">Mezcla 200–300<br>Mejorable</div>
+            <div class="hsc hsc-r">Mezcla &lt;200<br>Degradada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- cobertura -->
+    <div class="card">
+      <p class="card-title">Cobertura y suelo</p>
+      <div class="field">
+        <div class="fh">
+          <span class="flabel">Cobertura de especies sembradas (%)</span>
+          <div class="fright">
+            <button class="help-btn" onclick="togHelp('h-cb')" title="¿Cómo medir?">?</button>
+            <span class="fval" id="cb-v">65%</span>
+          </div>
+        </div>
+        <input type="range" id="sl-cb" min="0" max="100" step="5" value="65" oninput="sl(this,'cb-v',this.value+'%')">
+        <div class="help-box" id="h-cb">
+          <p>📐 <strong>Cómo medir:</strong> tendé una cuerda de 3 metros en el suelo. Cada 5 cm marcá si la base de una planta sembrada toca la cuerda. Contá los puntos y dividí por el total.</p>
+          <p>💡 Anotá por separado alfalfa, gramínea, maleza y suelo desnudo — los cuatro deben sumar 100%.</p>
+          <div class="help-scale">
+            <div class="hsc hsc-g">≥70%<br>Buena condición</div>
+            <div class="hsc hsc-y">50–70%<br>Mejorable</div>
+            <div class="hsc hsc-r">&lt;50%<br>Degradada</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="fh">
+          <span class="flabel">Suelo desnudo (%)</span>
+          <div class="fright">
+            <button class="help-btn" onclick="togHelp('h-sd')" title="¿Cómo medir?">?</button>
+            <span class="fval" id="sd-v">25%</span>
+          </div>
+        </div>
+        <input type="range" id="sl-sd" min="0" max="100" step="5" value="25" oninput="sl(this,'sd-v',this.value+'%')">
+        <div class="help-box" id="h-sd">
+          <p>📐 <strong>Cómo medir:</strong> con la misma cuerda, contá los puntos donde no hay ninguna planta (ni sembrada ni maleza). Ese porcentaje es el suelo desnudo.</p>
+          <p>💡 El suelo desnudo es el espacio que pueden ocupar las malezas. Cuanto más, más urgente es actuar.</p>
+          <div class="help-scale">
+            <div class="hsc hsc-g">&lt;30%<br>Buena condición</div>
+            <div class="hsc hsc-y">30–50%<br>Mejorable</div>
+            <div class="hsc hsc-r">&gt;50%<br>Degradada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- malezas -->
+    <div class="card">
+      <p class="card-title">Malezas</p>
+      <div class="field">
+        <div class="fh">
+          <span class="flabel">Cobertura de malezas (%)</span>
+          <div class="fright">
+            <button class="help-btn" onclick="togHelp('h-mz')" title="¿Cómo medir?">?</button>
+            <span class="fval" id="mz-v">5%</span>
+          </div>
+        </div>
+        <input type="range" id="sl-mz" min="0" max="100" step="5" value="5" oninput="sl(this,'mz-v',this.value+'%')">
+        <div class="help-box" id="h-mz">
+          <p>📐 <strong>Cómo medir:</strong> con la misma cuerda, contá los puntos donde la base de una maleza toca la línea. Ese porcentaje es la cobertura de malezas.</p>
+          <p>💡 <strong>Malezas de difícil control:</strong> gramón, sorgo de Alepo, rama negra, pasto puna, nabo, yuyo colorado. Se reconocen porque rebrotan después del corte o tienen raíces/rizomas profundos.</p>
+          <div class="help-scale">
+            <div class="hsc hsc-g">≤10%<br>Buena condición</div>
+            <div class="hsc hsc-y">10–20%<br>Mejorable</div>
+            <div class="hsc hsc-r">&gt;20%<br>Crítico</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <p style="font-size:14px;font-weight:500;margin-bottom:8px">Tipo de malezas predominantes</p>
+        <div class="chips">
+          <button class="rchip on" id="tm-f" onclick="setMz('facil')">Fácil control (cardos, nabos)</button>
+          <button class="rchip"    id="tm-d" onclick="setMz('dif')">Difícil control (gramón, rama negra, sorgo de Alepo)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- gramíneas (solo mix) -->
+    <div class="card hidden" id="gram-card">
+      <p class="card-title">Gramíneas sembradas</p>
+      <p style="font-size:14px;font-weight:500;margin-bottom:8px">¿Las gramíneas sembradas siguen presentes?</p>
+      <div class="chips">
+        <button class="rchip on" id="gm-si" onclick="setGm('si')">Sí, están presentes</button>
+        <button class="rchip"    id="gm-no" onclick="setGm('no')">No, se perdieron o están muy reducidas</button>
+      </div>
+    </div>
+
+    <button class="btn-main" onclick="diag()">Diagnosticar mi pastura →</button>
+
+    <!-- RESULTADO -->
+    <div class="result" id="result">
+      <div class="res-header" id="res-head">
+        <div class="res-icon" id="res-icon"></div>
+        <div>
+          <div id="res-lote" style="font-size:12px;font-weight:500;opacity:.7;margin-bottom:2px"></div>
+          <div class="res-title" id="res-title"></div>
+          <div class="res-sub" id="res-sub"></div>
+        </div>
+      </div>
+      <div class="res-body">
+        <svg id="res-svg" class="res-illus" viewBox="0 0 640 90" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="res-content">
+          <div class="conf-lbl"><span>Confianza del diagnóstico</span><span id="conf-txt"></span></div>
+          <div class="conf-bar"><div class="conf-fill" id="conf-fill"></div></div>
+          <div class="chips-grid" id="chips-grid"></div>
+          <hr class="hr">
+          <div class="descanso-box" id="descanso-box"></div>
+          <p class="res-desc" id="res-desc"></p>
+          <div class="accion" id="accion"></div>
+          <div class="action-row">
+            <button class="action-btn" onclick="guardarLote()">💾 Guardar en historial</button>
+            <button class="action-btn" onclick="compartir()">📤 Compartir diagnóstico</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fin tab diagnostico -->
+
+  <!-- TAB HISTORIAL -->
+  <div class="tab-panel" id="tab-historial">
+    <div class="card">
+      <p class="card-title">Lotes relevados</p>
+      <div id="hist-lista"></div>
+      <button class="btn-clear hidden" id="btn-clear" onclick="limpiarHistorial()">Borrar todo el historial</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Elaboración de indicadores prácticos para decidir el reemplazo de pasturas base alfalfa degradadas</strong><br>
+  Proyecto de extensión MasPasto · Valentina Vives · Trabajo Pre-Profesional · FAUBA · 2026<br>
+  Dir. Ing. Agr. María del Pilar Clavijo · Cátedra de Forrajicultura · Facultad de Agronomía · UBA<br>
+  <em>Basado en Rainero (s.f.), Undersander et al. (2011), Montoya et al. (2018) y Méndez (2022)</em>
+</footer>
+
+<script>
+var tipo='pura', mzT='facil', gmT='si', estacion='oi';
+var ultimoDiag=null;
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setTab(t){
+  ['diagnostico','historial'].forEach(function(x){
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){
+    b.classList.toggle('on', (i===0&&t==='diagnostico')||(i===1&&t==='historial'));
+  });
+  if(t==='historial') renderHistorial();
+}
+
+function setTipo(t){
+  tipo=t;
+  document.getElementById('b-pura').classList.toggle('on',t==='pura');
+  document.getElementById('b-mix').classList.toggle('on',t==='mix');
+  document.getElementById('gram-card').classList.toggle('hidden',t==='pura');
+}
+
+function setEst(e){
+  estacion=e;
+  document.getElementById('e-pv').classList.toggle('on',e==='pv');
+  document.getElementById('e-oi').classList.toggle('on',e==='oi');
+}
+
+function setMz(m){mzT=m;document.getElementById('tm-f').classList.toggle('on',m==='facil');document.getElementById('tm-d').classList.toggle('on',m==='dif')}
+function setGm(g){gmT=g;document.getElementById('gm-si').classList.toggle('on',g==='si');document.getElementById('gm-no').classList.toggle('on',g==='no')}
+
+function sl(el,outId,txt){
+  document.getElementById(outId).textContent=txt;
+  var pct=((el.value-el.min)/(el.max-el.min)*100);
+  el.style.background='linear-gradient(to right,#1D9E75 0%,#1D9E75 '+pct+'%,#e0e0e0 '+pct+'%)';
+}
+
+function togHelp(id){
+  var box=document.getElementById(id);
+  box.classList.toggle('open');
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  ['sl-pl','sl-tl','sl-cb','sl-sd','sl-mz'].forEach(function(id){
+    var e=document.getElementById(id);
+    var pct=((e.value-e.min)/(e.max-e.min)*100);
+    e.style.background='linear-gradient(to right,#1D9E75 0%,#1D9E75 '+pct+'%,#e0e0e0 '+pct+'%)';
+  });
+  renderHistorial();
+});
+
+function chip(lbl,val,cls){return '<div class="chip '+cls+'"><strong>'+lbl+'</strong>'+val+'</div>'}
+
+// ── Lógica de diagnóstico ─────────────────────────────────────────────────────
+function diag(){
+  var pl=+document.getElementById('sl-pl').value;
+  var tl=+document.getElementById('sl-tl').value;
+  var cb=+document.getElementById('sl-cb').value;
+  var sd=+document.getElementById('sl-sd').value;
+  var mz=+document.getElementById('sl-mz').value;
+  var lote=document.getElementById('lote-nombre').value.trim()||'Sin nombre';
+  var isMix=(tipo==='mix');
+
+  function rPl(){if(isMix){return pl>50?2:pl>=25?1:0;}else{return pl>100?2:pl>=50?1:0;}}
+  function rTl(){if(isMix){return tl>=300?2:tl>=200?1:0;}else{return tl>=600?2:tl>=400?1:0;}}
+  function rCb(){return cb>=70?2:cb>=50?1:0;}
+  function rSd(){return sd<30?2:sd<=50?1:0;}
+  function rMz(){if(mz<=10)return 2;if(mz<=20)return 1;return 0;}
+  function rGm(){if(!isMix)return 2;return gmT==='si'?2:0;}
+
+  var rpl=rPl(),rtl=rTl(),rcb=rCb(),rsd=rSd(),rmz=rMz(),rgm=rGm();
+  function pen(c){return c?-3:0}
+
+  var sc={};
+  sc.pri=(pl>=200?4:pl>=100?2:0)+(cb<70?1:0)+(mz<=5?2:0)+(sd>=10?1:0);
+  sc.pbc=(rpl===2?4:rpl===1?1:0)+(rtl===2?4:rtl===1?1:0)+(rcb===2?4:rcb===1?1:0)+(rsd===2?3:rsd===1?1:0)+(rmz===2?3:rmz===1?1:0)+(rgm===2?2:0)+pen(rpl===0)+pen(rtl===0)+pen(rcb===0)+pen(rmz===0);
+  sc.pmMz=(rpl>=1?3:0)+(rtl>=1?3:0)+(cb>=50&&cb<70?4:cb>=70?1:0)+(rsd>=1?2:0)+(mz>10&&mz<=20?4:mz>20&&mzT==='facil'?3:mz>20&&mzT==='dif'&&mz<=35?2:0)+(isMix&&rgm===2?1:0)+pen(rpl===0&&rtl===0);
+  sc.pmGm=isMix?(rpl>=1?3:0)+(rtl>=1?3:0)+(cb>=50?3:0)+(rsd>=1?2:0)+(rmz>=1?1:0)+(gmT==='no'?6:0)+pen(rpl===0&&rtl===0):-99;
+  sc.pmRal=(cb>=50&&cb<=70?5:0)+(sd>=30&&sd<=50?4:0)+(rpl<=1?2:0)+(rtl<=1?2:0)+(rmz>=1?1:0)+pen(rpl===2&&rtl===2)+pen(cb<50)+pen(sd>50);
+  sc.pd=(rpl===0?3:0)+(rtl===0?3:0)+(rcb===0?5:rcb===1?1:0)+(sd>30?3:0)+(sd>50?2:0)+(rmz===0?3:rmz===1?1:0)+(mzT==='dif'&&mz>20?2:0)+pen(cb>=50)+pen(sd<=30);
+
+  var best=null,bestSc=-99;
+  Object.keys(sc).forEach(function(k){if(sc[k]>bestSc){bestSc=sc[k];best=k}});
+  var conf=Math.min(100,Math.max(45,Math.round(bestSc/20*100)));
+
+  var cp=rpl===2?'chip-ok':rpl===1?'chip-warn':'chip-bad';
+  var ct=rtl===2?'chip-ok':rtl===1?'chip-warn':'chip-bad';
+  var cc=rcb===2?'chip-ok':rcb===1?'chip-warn':'chip-bad';
+  var cs=rsd===2?'chip-ok':rsd===1?'chip-warn':'chip-bad';
+  var cm=rmz===2?'chip-ok':rmz===1?'chip-warn':'chip-bad';
+  var ch=chip('Plantas alfalfa',pl+' pl/m²',cp)+chip('Tallos alfalfa',tl+' t/m²',ct)+chip('CB sembradas',cb+'%',cc)+chip('Suelo desnudo',sd+'%',cs)+chip('CB malezas',mz+'%',cm);
+  if(isMix) ch+=chip('Gramíneas',gmT==='si'?'Presentes':'Perdidas',gmT==='si'?'chip-ok':'chip-bad');
+
+  var titulo,bgH,colT,icon,sub,desc,accion,acCls;
+  if(best==='pri'){
+    titulo='Pastura recién implantada (PRI)';bgH='#E1F5EE';colT='#085041';icon='🌱';
+    sub='Etapa de establecimiento';
+    desc='La pastura está en la etapa de implantación. Es normal que la cobertura todavía no sea completa. El objetivo es alcanzar la densidad de plantas establecida antes del primer pastoreo. En ambientes de alto potencial se espera lograr 200–400 pl/m², con un balance de 50% leguminosas y 50% gramíneas en mezclas.';
+    accion='✅ Monitorear el stand de plantas. No entrar con animales hasta alcanzar la densidad mínima. Controlar malezas si superan el 5% de cobertura.';acCls='ac-g';
+  } else if(best==='pbc'){
+    titulo='Pastura en buena condición (PBC)';bgH='#E1F5EE';colT='#085041';icon='🟢';
+    sub='Condición óptima — buenas prácticas de manejo';
+    desc='La pastura está en plena producción con buena densidad, cobertura adecuada y baja presión de malezas. La alfalfa puede compensar la pérdida gradual de plantas aumentando el número de tallos por individuo, manteniéndose dentro de rangos productivos.';
+    accion='✅ Aplicar buenas prácticas de manejo. Respetar los períodos de descanso según la época. Monitorear densidad y malezas periódicamente.';acCls='ac-g';
+  } else if(best==='pmMz'){
+    titulo='Pastura mejorable — con malezas (PM)';bgH='#FFF3CD';colT='#854F0B';icon='🟡';
+    sub='Estado reversible — intervención posible';
+    desc='La densidad de la pastura todavía es aceptable, pero la presión de malezas supera el umbral tolerable (>10% CB). Las malezas reducen la productividad, compiten con las especies sembradas y pueden disminuir la calidad del forraje. Actuando a tiempo, el lote puede recuperarse.';
+    accion=mzT==='facil'?'🔧 Realizar control químico de malezas de hoja ancha (cardos, nabos). Respetar tiempos de carencia antes de volver a pastorear.':'🔧 Las malezas de difícil control (gramón, rama negra, sorgo de Alepo) requieren un plan específico. Consultar con un técnico antes de actuar.';acCls='ac-y';
+  } else if(best==='pmGm'){
+    titulo='Pastura mejorable — pérdida de gramíneas (PM)';bgH='#FFF3CD';colT='#854F0B';icon='🟡';
+    sub='Estado reversible — intersiembra recomendada';
+    desc='Se detecta reducción o pérdida del componente gramínea en la mezcla. La alfalfa sigue presente en densidades aceptables. Las gramíneas anuales pueden recuperarse por el banco de semillas; las perennes requieren intersiembra. Los espacios desnudos pueden ser ocupados por malezas si no se actúa rápido.';
+    accion='🔧 Gramíneas anuales: esperar recuperación por banco de semillas. Gramíneas perennes: intersembrar en suelo desnudo disponible (cebadilla, raigrás). Si hay malezas, hacer control químico previo.';acCls='ac-y';
+  } else if(best==='pmRal'){
+    titulo='Pastura mejorable — raleo de alfalfa (PM)';bgH='#FFF3CD';colT='#854F0B';icon='🟡';
+    sub='Estado reversible — intersiembra recomendada';
+    desc='La densidad de alfalfa disminuyó pero no llegó al punto de no retorno. Puede deberse a frecuencias de defoliación elevadas que impiden la recuperación de reservas en corona, encharcamientos, enfermedades de raíz y corona, o autotoxicidad en pasturas sobre alfalfa.';
+    accion='🔧 En pasturas mixtas: intersembrar con avena o raigrás anual junto con trébol rojo o trébol blanco. Corregir la frecuencia e intensidad del pastoreo para permitir la recuperación de reservas.';acCls='ac-y';
+  } else {
+    titulo='Pastura degradada (PD)';bgH='#FCEBEB';colT='#A32D2D';icon='🔴';
+    sub='Estado irreversible — renovación necesaria';
+    desc='La pastura está en estado avanzado de deterioro. La densidad de alfalfa está muy por debajo del umbral mínimo y la presión de malezas supera el 20% de cobertura. Los espacios liberados por las plantas muertas son ocupados por malezas, acelerando la degradación. No es posible la recuperación con intervenciones de mejora.';
+    accion='⚠️ Renovar la pastura. Planificar la siembra, elegir cultivares resistentes a enfermedades de raíz y corona, evitar alfalfa sobre alfalfa por autotoxicidad. Corregir los factores de manejo que llevaron a la degradación.';acCls='ac-r';
+  }
+
+  // Recomendación estacional de descanso
+  var descanso='';
+  if(best==='pbc'||best==='pmMz'||best==='pmGm'||best==='pmRal'){
+    if(estacion==='pv'){
+      descanso='🌸 Primavera/Verano: el período de descanso recomendado es de 300–400 °Cd entre pastoreos. Evitar defoliaciones frecuentes que no permitan la recuperación de reservas en corona.';
+    } else {
+      descanso='🍂 Otoño/Invierno: el período de descanso recomendado es de 600 °Cd entre pastoreos. En esta época la partición de asimilados es prioritaria hacia raíz y corona para sostener la planta durante el invierno.';
+    }
+  }
+
+  document.getElementById('res-svg').innerHTML=buildSVG(best);
+  document.getElementById('res-head').style.background=bgH;
+  document.getElementById('res-icon').textContent=icon;
+  document.getElementById('res-lote').textContent=lote!=='Sin nombre'?'Lote: '+lote:'';
+  document.getElementById('res-title').style.color=colT;document.getElementById('res-title').textContent=titulo;
+  document.getElementById('res-sub').style.color=colT;document.getElementById('res-sub').textContent=sub;
+  document.getElementById('chips-grid').innerHTML=ch;
+
+  var dbox=document.getElementById('descanso-box');
+  if(descanso){dbox.textContent=descanso;dbox.style.display='block';}
+  else{dbox.style.display='none';}
+
+  document.getElementById('res-desc').textContent=desc;
+  document.getElementById('accion').textContent=accion;document.getElementById('accion').className='accion '+acCls;
+  document.getElementById('conf-txt').textContent=conf+'%';
+  var f=document.getElementById('conf-fill');f.style.width=conf+'%';
+  f.style.background=conf>=70?'#1D9E75':conf>=50?'#EF9F27':'#E24B4A';
+
+  // guardar datos del diagnóstico actual
+  ultimoDiag={
+    lote:lote, fecha:new Date().toLocaleDateString('es-AR'),
+    estado:titulo, estadoCod:best, icon:icon,
+    pl:pl, tl:tl, cb:cb, sd:sd, mz:mz,
+    tipo:tipo, estacion:estacion, accion:accion,
+    bgH:bgH, colT:colT
+  };
+
+  var r=document.getElementById('result');r.style.display='block';
+  setTimeout(function(){r.scrollIntoView({behavior:'smooth',block:'start'})},60);
+}
+
+// ── Guardar historial ─────────────────────────────────────────────────────────
+function guardarLote(){
+  if(!ultimoDiag){return;}
+  var hist=JSON.parse(localStorage.getItem('pasturas_hist')||'[]');
+  hist.unshift(ultimoDiag);
+  if(hist.length>20) hist=hist.slice(0,20);
+  localStorage.setItem('pasturas_hist',JSON.stringify(hist));
+  var btn=document.querySelector('.action-btn');
+  btn.textContent='✅ Guardado';
+  setTimeout(function(){btn.textContent='💾 Guardar en historial';},2000);
+}
+
+function renderHistorial(){
+  var hist=JSON.parse(localStorage.getItem('pasturas_hist')||'[]');
+  var lista=document.getElementById('hist-lista');
+  var btnClear=document.getElementById('btn-clear');
+  if(hist.length===0){
+    lista.innerHTML='<div class="hist-empty">Todavía no guardaste ningún diagnóstico.<br>Hacé un diagnóstico y tocá "Guardar en historial".</div>';
+    btnClear.classList.add('hidden');
+    return;
+  }
+  btnClear.classList.remove('hidden');
+  var colores={pri:'#E1F5EE',pbc:'#E1F5EE',pmMz:'#FFF3CD',pmGm:'#FFF3CD',pmRal:'#FFF3CD',pd:'#FCEBEB'};
+  var txtCol={pri:'#085041',pbc:'#085041',pmMz:'#854F0B',pmGm:'#854F0B',pmRal:'#854F0B',pd:'#A32D2D'};
+  lista.innerHTML=hist.map(function(h,i){
+    var bg=colores[h.estadoCod]||'#F1EFE8';
+    var tc=txtCol[h.estadoCod]||'#444';
+    return '<div class="hist-card" onclick="cargarLote('+i+')">'
+      +'<div class="hist-head">'
+      +'<span class="hist-lote">'+h.icon+' '+h.lote+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span class="hist-fecha">'+h.fecha+'</span>'
+      +'<button class="hist-del" onclick="event.stopPropagation();borrarLote('+i+')" title="Borrar">✕</button>'
+      +'</div></div>'
+      +'<div style="display:inline-block;font-size:12px;font-weight:500;padding:3px 10px;border-radius:100px;background:'+bg+';color:'+tc+';margin-bottom:8px">'+h.estado+'</div>'
+      +'<div class="hist-row">'
+      +'<span class="hist-chip">'+h.pl+' pl/m²</span>'
+      +'<span class="hist-chip">'+h.tl+' t/m²</span>'
+      +'<span class="hist-chip">CB '+h.cb+'%</span>'
+      +'<span class="hist-chip">SD '+h.sd+'%</span>'
+      +'<span class="hist-chip">Malezas '+h.mz+'%</span>'
+      +'</div></div>';
+  }).join('');
+}
+
+function borrarLote(i){
+  var hist=JSON.parse(localStorage.getItem('pasturas_hist')||'[]');
+  hist.splice(i,1);
+  localStorage.setItem('pasturas_hist',JSON.stringify(hist));
+  renderHistorial();
+}
+
+function limpiarHistorial(){
+  if(confirm('¿Borrar todo el historial?')){
+    localStorage.removeItem('pasturas_hist');
+    renderHistorial();
+  }
+}
+
+function cargarLote(i){
+  var hist=JSON.parse(localStorage.getItem('pasturas_hist')||'[]');
+  var h=hist[i];
+  setTab('diagnostico');
+  document.getElementById('lote-nombre').value=h.lote==='Sin nombre'?'':h.lote;
+  setTipo(h.tipo||'pura');
+  setEst(h.estacion||'oi');
+  var sliders={pl:h.pl,tl:h.tl,cb:h.cb,sd:h.sd,mz:h.mz};
+  var labels={'pl':'pl-v','tl':'tl-v','cb':'cb-v','sd':'sd-v','mz':'mz-v'};
+  var units={'pl':' pl/m²','tl':' t/m²','cb':'%','sd':'%','mz':'%'};
+  Object.keys(sliders).forEach(function(k){
+    var el=document.getElementById('sl-'+k);
+    el.value=sliders[k];
+    document.getElementById(labels[k]).textContent=sliders[k]+units[k];
+    var pct=((el.value-el.min)/(el.max-el.min)*100);
+    el.style.background='linear-gradient(to right,#1D9E75 0%,#1D9E75 '+pct+'%,#e0e0e0 '+pct+'%)';
+  });
+  setTimeout(function(){window.scrollTo({top:0,behavior:'smooth'});},100);
+}
+
+// ── Compartir ─────────────────────────────────────────────────────────────────
+function compartir(){
+  if(!ultimoDiag) return;
+  var d=ultimoDiag;
+  var txt='🌿 Diagnóstico de pastura base alfalfa\n'
+    +'📍 Lote: '+d.lote+'\n'
+    +'📅 Fecha: '+d.fecha+'\n'
+    +'🏷 Estado: '+d.estado+'\n\n'
+    +'Indicadores relevados:\n'
+    +'• Plantas alfalfa: '+d.pl+' pl/m²\n'
+    +'• Tallos alfalfa: '+d.tl+' t/m²\n'
+    +'• CB sembradas: '+d.cb+'%\n'
+    +'• Suelo desnudo: '+d.sd+'%\n'
+    +'• CB malezas: '+d.mz+'%\n\n'
+    +'Sugerencia: '+d.accion+'\n\n'
+    +'Herramienta: https://valentinavivess-blip.github.io/diagnostico-pastura/';
+
+  if(navigator.share){
+    navigator.share({title:'Diagnóstico pastura',text:txt}).catch(function(){});
+  } else {
+    navigator.clipboard.writeText(txt).then(function(){
+      var btns=document.querySelectorAll('.action-btn');
+      btns[1].textContent='✅ Copiado al portapapeles';
+      setTimeout(function(){btns[1].textContent='📤 Compartir diagnóstico';},2500);
+    });
+  }
+}
+
+// ── SVG ilustraciones ─────────────────────────────────────────────────────────
+function alf(x,y,col,h,r){
+  return '<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(y-h)+'" stroke="'+col+'" stroke-width="2"/>'
+    +'<ellipse cx="'+x+'" cy="'+(y-h)+'" rx="'+(r*.6)+'" ry="'+(h*.38)+'" fill="'+col+'"/>'
+    +'<ellipse cx="'+(x-r*.45)+'" cy="'+(y-h*.62)+'" rx="'+(r*.5)+'" ry="'+(h*.28)+'" fill="'+col+'" opacity=".8"/>'
+    +'<ellipse cx="'+(x+r*.45)+'" cy="'+(y-h*.62)+'" rx="'+(r*.5)+'" ry="'+(h*.28)+'" fill="'+col+'" opacity=".8"/>';
+}
+function gram(x,y){
+  return '<line x1="'+x+'" y1="'+y+'" x2="'+(x-6)+'" y2="'+(y-18)+'" stroke="#97C459" stroke-width="2.5"/>'
+    +'<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(y-24)+'" stroke="#97C459" stroke-width="2.5"/>'
+    +'<line x1="'+x+'" y1="'+y+'" x2="'+(x+6)+'" y2="'+(y-18)+'" stroke="#97C459" stroke-width="2.5"/>';
+}
+function weed(x,y){
+  return '<polygon points="'+x+','+(y-1)+' '+(x-11)+','+(y-30)+' '+(x+11)+','+(y-30)+'" fill="#B4B2A9"/>'
+    +'<line x1="'+x+'" y1="'+(y-1)+'" x2="'+x+'" y2="'+(y-30)+'" stroke="#888780" stroke-width="1.5"/>';
+}
+function buildSVG(est){
+  var bg={pbc:'#C8E6C9',pri:'#E1F5EE',pmMz:'#FFF3CD',pmGm:'#FFF3CD',pmRal:'#FFF3CD',pd:'#FCEBEB'}[est]||'#F1EFE8';
+  var out='<rect width="640" height="90" fill="'+bg+'"/><rect x="0" y="74" width="640" height="16" fill="#9F7B4B"/>';
+  if(est==='pbc'){[35,90,145,200,255,310,365,420,475,530,585].forEach(function(x){out+=alf(x,74,'#1D9E75',26,22);out+=alf(x+26,74,'#5DCAA5',20,17)});}
+  else if(est==='pri'){[80,200,330,460,580].forEach(function(x){out+=alf(x,74,'#5DCAA5',13,11)});}
+  else if(est==='pmMz'){[60,180,310,440,570].forEach(function(x){out+=alf(x,74,'#1D9E75',22,18)});[120,250,380,510,620].forEach(function(x){out+=weed(x,75)});}
+  else if(est==='pmGm'){[60,190,340,490,610].forEach(function(x){out+=alf(x,74,'#1D9E75',22,18)});out+=gram(130,74)+gram(290,74)+gram(420,74);}
+  else if(est==='pmRal'){[70,230,400,570].forEach(function(x){out+=alf(x,74,'#1D9E75',18,15)});[150,310,480].forEach(function(x){out+=gram(x,74)});[550,620].forEach(function(x){out+=weed(x,75)});}
+  else{[50,160,270,380,490,600].forEach(function(x){out+=weed(x,75)});out+=alf(220,74,'#5DCAA5',10,8);}
+  return out;
+}
+</script>
+</body>
+</html>
